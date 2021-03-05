@@ -1,4 +1,7 @@
+let right_pwm = 0
+let left_pwm = 0
 let accelY = 0
+let reverse = 0
 let directionX = 0
 let readY = 0
 let readX = 0
@@ -30,6 +33,7 @@ basic.forever(function () {
         directionX = 0
     }
     if (readY < ADC_deadzone_low) {
+        reverse += 1
         accelY = -1 * pins.map(
         readY,
         0,
@@ -38,6 +42,7 @@ basic.forever(function () {
         0
         )
     } else if (readY > ADC_deadzone_high) {
+        reverse += 0
         accelY = pins.map(
         readY,
         ADC_deadzone_high,
@@ -46,7 +51,18 @@ basic.forever(function () {
         DAC_resolution - 1
         )
     } else {
+        reverse += 0
         accelY = 0
+    }
+    if (directionX < 0) {
+        left_pwm = Math.abs(accelY) * (1 - Math.abs(accelY) / DAC_resolution)
+        right_pwm = Math.abs(accelY)
+    } else if (directionX > 0) {
+        left_pwm = Math.abs(accelY)
+        right_pwm = Math.abs(accelY) * (1 - Math.abs(accelY) / DAC_resolution)
+    } else {
+        left_pwm = Math.abs(accelY)
+        right_pwm = Math.abs(accelY)
     }
     basic.pause(10)
 })
