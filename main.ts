@@ -64,5 +64,7 @@ basic.forever(function () {
         left_pwm = Math.abs(accelY)
         right_pwm = Math.abs(accelY)
     }
+    led.plotBrightness(0, 2, left_pwm)
+    led.plotBrightness(4, 2, right_pwm)
     basic.pause(10)
 })
