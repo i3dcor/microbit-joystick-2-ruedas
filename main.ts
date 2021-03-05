@@ -55,11 +55,11 @@ basic.forever(function () {
         accelY = 0
     }
     if (directionX < 0) {
-        left_pwm = Math.abs(accelY) * (Math.abs(accelY) / DAC_resolution)
+        left_pwm = Math.abs(accelY) * (1 - Math.abs(directionX) / DAC_resolution)
         right_pwm = Math.abs(accelY)
     } else if (directionX > 0) {
         left_pwm = Math.abs(accelY)
-        right_pwm = Math.abs(accelY) * (Math.abs(accelY) / DAC_resolution)
+        right_pwm = Math.abs(accelY) * (1 - Math.abs(directionX) / DAC_resolution)
     } else {
         left_pwm = Math.abs(accelY)
         right_pwm = Math.abs(accelY)
