@@ -1,5 +1,5 @@
 {
-    "name": "microbit joystick 2 ruedas",
+    "name": "microbit joystick 2 ruedas radio receiver",
     "description": "",
     "dependencies": {
         "core": "*",
