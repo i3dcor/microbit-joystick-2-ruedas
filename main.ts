@@ -10,6 +10,7 @@ let deadzone_width = 24
 let ADC_resolution = 1024
 let ADC_deadzone_low = ADC_resolution / 2 - deadzone_width / 2
 let ADC_deadzone_high = ADC_resolution / 2 + deadzone_width / 2
+radio.setGroup(1)
 basic.forever(function () {
     readX = pins.analogReadPin(AnalogPin.P0)
     readY = pins.analogReadPin(AnalogPin.P1)
@@ -66,5 +67,8 @@ basic.forever(function () {
     }
     led.plotBrightness(0, 2, left_pwm)
     led.plotBrightness(4, 2, right_pwm)
+    radio.sendValue("reverse", reverse)
+    radio.sendValue("left", left_pwm)
+    radio.sendValue("right", right_pwm)
     basic.pause(10)
 })
