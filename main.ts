@@ -81,7 +81,7 @@ let deadzone_width = 24
 ADC_resolution = 1024
 ADC_deadzone_low = ADC_resolution / 2 - deadzone_width / 2
 ADC_deadzone_high = ADC_resolution / 2 + deadzone_width / 2
-radio.setGroup(1)
+radio.setGroup(99)
 left_pwm = 50
 right_pwm = 50
 basic.forever(function () {
