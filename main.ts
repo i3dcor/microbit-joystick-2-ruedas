@@ -10,7 +10,7 @@ let deadzone_width = 24
 let ADC_resolution = 1024
 let ADC_deadzone_low = ADC_resolution / 2 - deadzone_width / 2
 let ADC_deadzone_high = ADC_resolution / 2 + deadzone_width / 2
-radio.setGroup(1)
+radio.setGroup(99)
 basic.forever(function () {
     readX = pins.analogReadPin(AnalogPin.P0)
     readY = pins.analogReadPin(AnalogPin.P1)
