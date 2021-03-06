@@ -12,7 +12,7 @@ function read_data () {
     } else if (readX > ADC_deadzone_high) {
         directionX = pins.map(
         readX,
-        ADC_deadzone_high,
+        0,
         ADC_resolution - 1,
         0,
         DAC_resolution - 1
@@ -33,7 +33,7 @@ function read_data () {
         reverse += 0
         accelY = pins.map(
         readY,
-        ADC_deadzone_high,
+        0,
         ADC_resolution - 1,
         0,
         DAC_resolution - 1
@@ -82,8 +82,8 @@ ADC_resolution = 1024
 ADC_deadzone_low = ADC_resolution / 2 - deadzone_width / 2
 ADC_deadzone_high = ADC_resolution / 2 + deadzone_width / 2
 radio.setGroup(1)
-left_pwm = 0
-right_pwm = 0
+left_pwm = 50
+right_pwm = 50
 basic.forever(function () {
     led.plotBrightness(0, 2, left_pwm)
     led.plotBrightness(4, 2, right_pwm)
