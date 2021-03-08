@@ -1,3 +1,12 @@
+radio.onReceivedNumber(function (receivedNumber) {
+    if (receivedNumber < 0) {
+        reverse += 1
+    } else {
+        reverse += 0
+    }
+    left_pwm = Math.abs(Math.trunc(receivedNumber))
+    right_pwm = (Math.abs(receivedNumber) - left_pwm) * 1000
+})
 function read_data () {
     readX = pins.analogReadPin(AnalogPin.P0)
     readY = pins.analogReadPin(AnalogPin.P1)
@@ -52,24 +61,18 @@ function read_data () {
         left_pwm = Math.abs(accelY)
         right_pwm = Math.abs(accelY)
     }
-    radio.sendValue("reverse", reverse)
-    radio.sendValue("left_pwm", left_pwm)
-    radio.sendValue("right_pwm", right_pwm)
-}
-radio.onReceivedValue(function (name, value) {
-    if (name == "left_pwm") {
-        left_pwm = value
-    } else if (name == "right_pwm") {
-    	
-    } else if (name == "reverse") {
-        reverse = value
+    direction_left_right_combined_number = left_pwm + right_pwm / 1000
+    if (reverse != 0) {
+        direction_left_right_combined_number = -1 * direction_left_right_combined_number
     }
-})
+    radio.sendNumber(direction_left_right_combined_number)
+}
+let direction_left_right_combined_number = 0
 let accelY = 0
-let reverse = 0
 let directionX = 0
 let readY = 0
 let readX = 0
+let reverse = 0
 let right_pwm = 0
 let left_pwm = 0
 let ADC_deadzone_high = 0
@@ -88,5 +91,5 @@ basic.forever(function () {
     read_data()
     led.plotBrightness(0, 2, left_pwm)
     led.plotBrightness(4, 2, right_pwm)
-    basic.pause(10)
+    basic.pause(500)
 })
