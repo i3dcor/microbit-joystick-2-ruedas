@@ -60,7 +60,7 @@ radio.onReceivedValue(function (name, value) {
     if (name == "left_pwm") {
         left_pwm = value
     } else if (name == "right_pwm") {
-        right_pwm = value
+    	
     } else if (name == "reverse") {
         reverse = value
     }
@@ -85,6 +85,7 @@ radio.setGroup(99)
 left_pwm = 50
 right_pwm = 50
 basic.forever(function () {
+    read_data()
     led.plotBrightness(0, 2, left_pwm)
     led.plotBrightness(4, 2, right_pwm)
     basic.pause(10)
