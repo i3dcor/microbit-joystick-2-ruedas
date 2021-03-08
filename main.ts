@@ -70,5 +70,5 @@ basic.forever(function () {
     radio.sendValue("reverse", reverse)
     radio.sendValue("left", left_pwm)
     radio.sendValue("right", right_pwm)
-    basic.pause(10)
+    basic.pause(500)
 })
