@@ -8,6 +8,14 @@ radio.onReceivedNumber(function (receivedNumber) {
     right_pwm = (Math.abs(receivedNumber) - left_pwm) * 1000
     basic.pause(100)
 })
+input.onButtonPressed(Button.A, function () {
+    led.toggle(2, 0)
+    if (receiver_mode == 0) {
+        receiver_mode = 1
+    } else {
+        receiver_mode = 0
+    }
+})
 function read_data () {
     readX = pins.analogReadPin(AnalogPin.P0)
     readY = pins.analogReadPin(AnalogPin.P1)
@@ -22,7 +30,7 @@ function read_data () {
     } else if (readX > ADC_deadzone_high) {
         directionX = pins.map(
         readX,
-        0,
+        ADC_deadzone_high,
         ADC_resolution - 1,
         0,
         DAC_resolution - 1
@@ -43,7 +51,7 @@ function read_data () {
         reverse = 0
         accelY = pins.map(
         readY,
-        0,
+        ADC_deadzone_high,
         ADC_resolution - 1,
         0,
         DAC_resolution - 1
@@ -80,7 +88,9 @@ let ADC_resolution = 0
 let DAC_resolution = 0
 let right_pwm = 0
 let left_pwm = 0
+let receiver_mode = 0
 radio.setGroup(99)
+receiver_mode = 0
 left_pwm = 50
 right_pwm = 50
 DAC_resolution = 256
@@ -89,7 +99,9 @@ ADC_resolution = 1024
 ADC_deadzone_low = ADC_resolution / 2 - deadzone_width / 2
 ADC_deadzone_high = ADC_resolution / 2 + deadzone_width / 2
 basic.forever(function () {
-    read_data()
+    if (receiver_mode == 0) {
+        read_data()
+    }
     led.plotBrightness(0, 2, left_pwm)
     led.plotBrightness(4, 2, right_pwm)
     basic.pause(100)
