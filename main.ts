@@ -1,11 +1,12 @@
 radio.onReceivedNumber(function (receivedNumber) {
     if (receivedNumber < 0) {
-        reverse += 1
+        reverse = 1
     } else {
-        reverse += 0
+        reverse = 0
     }
     left_pwm = Math.abs(Math.trunc(receivedNumber))
     right_pwm = (Math.abs(receivedNumber) - left_pwm) * 1000
+    basic.pause(100)
 })
 function read_data () {
     readX = pins.analogReadPin(AnalogPin.P0)
@@ -30,7 +31,7 @@ function read_data () {
         directionX = 0
     }
     if (readY < ADC_deadzone_low) {
-        reverse += 1
+        reverse = 1
         accelY = -1 * pins.map(
         readY,
         0,
@@ -39,7 +40,7 @@ function read_data () {
         0
         )
     } else if (readY > ADC_deadzone_high) {
-        reverse += 0
+        reverse = 0
         accelY = pins.map(
         readY,
         0,
@@ -48,7 +49,7 @@ function read_data () {
         DAC_resolution - 1
         )
     } else {
-        reverse += 0
+        reverse = 0
         accelY = 0
     }
     if (directionX < 0) {
@@ -73,23 +74,23 @@ let directionX = 0
 let readY = 0
 let readX = 0
 let reverse = 0
-let right_pwm = 0
-let left_pwm = 0
 let ADC_deadzone_high = 0
 let ADC_deadzone_low = 0
 let ADC_resolution = 0
 let DAC_resolution = 0
+let right_pwm = 0
+let left_pwm = 0
+radio.setGroup(99)
+left_pwm = 50
+right_pwm = 50
 DAC_resolution = 256
 let deadzone_width = 24
 ADC_resolution = 1024
 ADC_deadzone_low = ADC_resolution / 2 - deadzone_width / 2
 ADC_deadzone_high = ADC_resolution / 2 + deadzone_width / 2
-radio.setGroup(99)
-left_pwm = 50
-right_pwm = 50
 basic.forever(function () {
     read_data()
     led.plotBrightness(0, 2, left_pwm)
     led.plotBrightness(4, 2, right_pwm)
-    basic.pause(500)
+    basic.pause(100)
 })
