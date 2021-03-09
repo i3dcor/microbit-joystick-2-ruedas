@@ -7,8 +7,8 @@ radio.onReceivedNumber(function (receivedNumber) {
         } else {
             reverse = 0
         }
-        left_pwm = Math.abs(Math.trunc(receivedNumber / 1000))
-        right_pwm = Math.abs(receivedNumber) - left_pwm * 1000
+        left_pwm = Math.round(Math.abs(Math.trunc(receivedNumber / 1000)))
+        right_pwm = Math.round(Math.abs(receivedNumber) - left_pwm * 1000)
     }
 })
 input.onButtonPressed(Button.A, function () {
@@ -43,32 +43,32 @@ function read_data () {
     readY = pins.analogReadPin(AnalogPin.P1)
     if (readY < ADC_deadzone_low) {
         reverse = 1
-        accelY = pins.map(
+        accelY = Math.round(pins.map(
         readY,
         0,
         ADC_deadzone_low,
         DAC_resolution - 1,
         0
-        )
+        ))
     } else if (readY > ADC_deadzone_high) {
         reverse = 0
-        accelY = pins.map(
+        accelY = Math.round(pins.map(
         readY,
         ADC_deadzone_high,
         ADC_resolution - 1,
         0,
         DAC_resolution - 1
-        )
+        ))
     } else {
         reverse = 0
         accelY = 0
     }
     if (directionX < 0) {
-        left_pwm = accelY * (1 + directionX / DAC_resolution)
+        left_pwm = Math.round(accelY * (1 + directionX / DAC_resolution))
         right_pwm = accelY
     } else if (directionX > 0) {
         left_pwm = accelY
-        right_pwm = accelY * (1 - directionX / DAC_resolution)
+        right_pwm = Math.round(accelY * (1 - directionX / DAC_resolution))
     } else {
         left_pwm = accelY
         right_pwm = accelY
