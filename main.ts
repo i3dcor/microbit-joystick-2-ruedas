@@ -1,13 +1,14 @@
 radio.onReceivedNumber(function (receivedNumber) {
     if (receiver_mode != 0) {
-        basic.showNumber(receivedNumber)
+        led.plotBrightness(0, 2, left_pwm)
+        led.plotBrightness(4, 2, right_pwm)
         if (receivedNumber < 0) {
             reverse = 1
         } else {
             reverse = 0
         }
-        left_pwm = Math.abs(Math.trunc(receivedNumber))
-        right_pwm = (Math.abs(receivedNumber) - left_pwm) * 1000
+        left_pwm = Math.abs(Math.trunc(receivedNumber / 1000))
+        right_pwm = Math.abs(receivedNumber) - left_pwm * 1000
     }
 })
 input.onButtonPressed(Button.A, function () {
@@ -72,7 +73,7 @@ function read_data () {
         left_pwm = accelY
         right_pwm = accelY
     }
-    direction_left_right_combined_number = left_pwm + right_pwm / 1000
+    direction_left_right_combined_number = right_pwm + left_pwm * 1000
     if (reverse != 0) {
         direction_left_right_combined_number = -1 * direction_left_right_combined_number
     }
