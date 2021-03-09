@@ -42,7 +42,7 @@ function read_data () {
     readY = pins.analogReadPin(AnalogPin.P1)
     if (readY < ADC_deadzone_low) {
         reverse = 1
-        accelY = -1 * pins.map(
+        accelY = pins.map(
         readY,
         0,
         ADC_deadzone_low,
@@ -63,14 +63,14 @@ function read_data () {
         accelY = 0
     }
     if (directionX < 0) {
-        left_pwm = Math.abs(accelY) * (1 - Math.abs(directionX) / DAC_resolution)
-        right_pwm = Math.abs(accelY)
+        left_pwm = accelY * (1 + directionX / DAC_resolution)
+        right_pwm = accelY
     } else if (directionX > 0) {
-        left_pwm = Math.abs(accelY)
-        right_pwm = Math.abs(accelY) * (1 - Math.abs(directionX) / DAC_resolution)
+        left_pwm = accelY
+        right_pwm = accelY * (1 - directionX / DAC_resolution)
     } else {
-        left_pwm = Math.abs(accelY)
-        right_pwm = Math.abs(accelY)
+        left_pwm = accelY
+        right_pwm = accelY
     }
     direction_left_right_combined_number = left_pwm + right_pwm / 1000
     if (reverse != 0) {
