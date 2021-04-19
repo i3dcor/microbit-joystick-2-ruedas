@@ -15,15 +15,18 @@ radio.onReceivedNumber(function (receivedNumber) {
         LED_max_value
         ))
         if (receivedNumber < 0) {
-            reverse = 1
+            reverse_left = 1
+            reverse_right = 0
         } else {
-            reverse = 0
+            reverse_left = 0
+            reverse_right = 1
         }
         left_pwm = Math.round(Math.abs(Math.trunc(receivedNumber / decimals)))
         right_pwm = Math.round(Math.abs(receivedNumber) - left_pwm * decimals)
         pins.analogWritePin(AnalogPin.P0, left_pwm)
         pins.analogWritePin(AnalogPin.P1, right_pwm)
-        pins.digitalWritePin(DigitalPin.P2, reverse)
+        pins.digitalWritePin(DigitalPin.P2, reverse_left)
+        pins.digitalWritePin(DigitalPin.P8, reverse_right)
     }
 })
 input.onButtonPressed(Button.A, function () {
@@ -57,7 +60,7 @@ function read_data () {
     }
     readY = pins.analogReadPin(AnalogPin.P1)
     if (readY < ADC_deadzone_low) {
-        reverse = 1
+        reverse_right = 1
         accelY = Math.round(pins.map(
         readY,
         0,
@@ -66,7 +69,7 @@ function read_data () {
         0
         ))
     } else if (readY > ADC_deadzone_high) {
-        reverse = 0
+        reverse_right = 0
         accelY = Math.round(pins.map(
         readY,
         ADC_deadzone_high,
@@ -75,7 +78,7 @@ function read_data () {
         DAC_resolution - 1
         ))
     } else {
-        reverse = 0
+        reverse_right = 0
         accelY = 0
     }
     if (directionX < 0) {
@@ -89,7 +92,7 @@ function read_data () {
         right_pwm = accelY
     }
     direction_left_right_combined_number = right_pwm + left_pwm * decimals
-    if (reverse != 0) {
+    if (reverse_right != 0) {
         direction_left_right_combined_number = -1 * direction_left_right_combined_number
     }
     radio.sendNumber(direction_left_right_combined_number)
@@ -99,7 +102,8 @@ let accelY = 0
 let readY = 0
 let directionX = 0
 let readX = 0
-let reverse = 0
+let reverse_right = 0
+let reverse_left = 0
 let ADC_deadzone_high = 0
 let ADC_deadzone_low = 0
 let LED_max_value = 0
