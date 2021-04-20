@@ -114,7 +114,7 @@ let left_pwm = 0
 let decimals = 0
 let receiver_mode = 0
 radio.setGroup(99)
-receiver_mode = 0
+receiver_mode = 1
 decimals = 10000
 left_pwm = 50
 right_pwm = 50
