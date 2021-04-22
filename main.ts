@@ -1,13 +1,13 @@
 radio.onReceivedNumber(function (receivedNumber) {
     if (receiver_mode != 0) {
-        led.plotBrightness(0, 2, pins.map(
+        led.plotBrightness(0, led_accel_row - 1, pins.map(
         left_pwm,
         0,
         DAC_resolution - 1,
         0,
         LED_max_value
         ))
-        led.plotBrightness(4, 2, pins.map(
+        led.plotBrightness(4, led_accel_row - 1, pins.map(
         right_pwm,
         0,
         DAC_resolution - 1,
@@ -97,6 +97,8 @@ function read_data () {
     }
     radio.sendNumber(direction_left_right_combined_number)
 }
+let led_accel_right_row = 0
+let led_accel_left_row = 0
 let direction_left_right_combined_number = 0
 let accelY = 0
 let readY = 0
@@ -112,9 +114,13 @@ let DAC_resolution = 0
 let right_pwm = 0
 let left_pwm = 0
 let decimals = 0
+let led_accel_row = 0
 let receiver_mode = 0
 radio.setGroup(99)
 receiver_mode = 1
+led_accel_row = 2
+led.plot(0, led_accel_row)
+led.plot(4, led_accel_row)
 decimals = 10000
 left_pwm = 50
 right_pwm = 50
@@ -127,14 +133,21 @@ ADC_deadzone_high = ADC_resolution / 2 + deadzone_width / 2
 basic.forever(function () {
     if (receiver_mode == 0) {
         read_data()
-        led.plotBrightness(0, 2, pins.map(
+        if (reverse_right != 0) {
+            led_accel_left_row = led_accel_row + 1
+            led_accel_right_row = led_accel_row + 1
+        } else {
+            led_accel_left_row = led_accel_row - 1
+            led_accel_right_row = led_accel_row - 1
+        }
+        led.plotBrightness(0, led_accel_left_row, pins.map(
         left_pwm,
         0,
         DAC_resolution - 1,
         0,
         LED_max_value
         ))
-        led.plotBrightness(4, 2, pins.map(
+        led.plotBrightness(4, led_accel_right_row, pins.map(
         right_pwm,
         0,
         DAC_resolution - 1,
