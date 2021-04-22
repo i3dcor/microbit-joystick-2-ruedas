@@ -1,5 +1,13 @@
 radio.onReceivedNumber(function (receivedNumber) {
     if (receiver_mode != 0) {
+        if (receivedNumber < 0) {
+            reverse_left = 1
+            reverse_right = 0
+        } else {
+            reverse_left = 0
+            reverse_right = 1
+        }
+        ledscontrol()
         led.plotBrightness(0, led_accel_row - 1, pins.map(
         left_pwm,
         0,
@@ -14,13 +22,6 @@ radio.onReceivedNumber(function (receivedNumber) {
         0,
         LED_max_value
         ))
-        if (receivedNumber < 0) {
-            reverse_left = 1
-            reverse_right = 0
-        } else {
-            reverse_left = 0
-            reverse_right = 1
-        }
         left_pwm = Math.round(Math.abs(Math.trunc(receivedNumber / decimals)))
         right_pwm = Math.round(Math.abs(receivedNumber) - left_pwm * decimals)
         pins.analogWritePin(AnalogPin.P0, left_pwm)
@@ -60,7 +61,7 @@ function read_data () {
     }
     readY = pins.analogReadPin(AnalogPin.P1)
     if (readY < ADC_deadzone_low) {
-        reverse_right = 1
+        reverse_left = 1
         accelY = Math.round(pins.map(
         readY,
         0,
@@ -69,7 +70,7 @@ function read_data () {
         0
         ))
     } else if (readY > ADC_deadzone_high) {
-        reverse_right = 0
+        reverse_left = 0
         accelY = Math.round(pins.map(
         readY,
         ADC_deadzone_high,
@@ -78,7 +79,7 @@ function read_data () {
         DAC_resolution - 1
         ))
     } else {
-        reverse_right = 0
+        reverse_left = 0
         accelY = 0
     }
     if (directionX < 0) {
@@ -92,10 +93,21 @@ function read_data () {
         right_pwm = accelY
     }
     direction_left_right_combined_number = right_pwm + left_pwm * decimals
-    if (reverse_right != 0) {
+    if (reverse_left != 0) {
         direction_left_right_combined_number = -1 * direction_left_right_combined_number
     }
     radio.sendNumber(direction_left_right_combined_number)
+}
+function ledscontrol () {
+    led.unplot(0, led_accel_left_row)
+    led.unplot(4, led_accel_right_row)
+    if (reverse_left != 0) {
+        led_accel_left_row = led_accel_row + 1
+        led_accel_right_row = led_accel_row + 1
+    } else {
+        led_accel_left_row = led_accel_row - 1
+        led_accel_right_row = led_accel_row - 1
+    }
 }
 let led_accel_right_row = 0
 let led_accel_left_row = 0
@@ -133,13 +145,7 @@ ADC_deadzone_high = ADC_resolution / 2 + deadzone_width / 2
 basic.forever(function () {
     if (receiver_mode == 0) {
         read_data()
-        if (reverse_right != 0) {
-            led_accel_left_row = led_accel_row + 1
-            led_accel_right_row = led_accel_row + 1
-        } else {
-            led_accel_left_row = led_accel_row - 1
-            led_accel_right_row = led_accel_row - 1
-        }
+        ledscontrol()
         led.plotBrightness(0, led_accel_left_row, pins.map(
         left_pwm,
         0,
