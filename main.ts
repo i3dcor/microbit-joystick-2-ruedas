@@ -1,4 +1,5 @@
 radio.onReceivedNumber(function (receivedNumber) {
+    pins.digitalWritePin(DigitalPin.P3, 1)
     if (receiver_mode != 0) {
         if (receivedNumber < 0) {
             reverse_left = 1
@@ -160,6 +161,8 @@ basic.forever(function () {
         0,
         LED_max_value
         ))
-        basic.pause(100)
+    } else {
+        pins.digitalWritePin(DigitalPin.P3, 0)
     }
+    basic.pause(100)
 })
