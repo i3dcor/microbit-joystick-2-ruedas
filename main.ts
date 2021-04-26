@@ -1,5 +1,9 @@
+function BrakeOff () {
+    time_of_last_move += input.runningTime()
+    // Brake off
+    pins.digitalWritePin(DigitalPin.P3, 0)
+}
 radio.onReceivedNumber(function (receivedNumber) {
-    pins.digitalWritePin(DigitalPin.P3, 1)
     if (receiver_mode != 0) {
         if (receivedNumber < 0) {
             reverse_left = 1
@@ -25,10 +29,11 @@ radio.onReceivedNumber(function (receivedNumber) {
         ))
         left_pwm = Math.round(Math.abs(Math.trunc(receivedNumber / decimals)))
         right_pwm = Math.round(Math.abs(receivedNumber) - left_pwm * decimals)
-        pins.analogWritePin(AnalogPin.P0, left_pwm)
-        pins.analogWritePin(AnalogPin.P1, right_pwm)
+        BrakeOff()
         pins.digitalWritePin(DigitalPin.P2, reverse_left)
         pins.digitalWritePin(DigitalPin.P8, reverse_right)
+        pins.analogWritePin(AnalogPin.P0, left_pwm)
+        pins.analogWritePin(AnalogPin.P1, right_pwm)
     }
 })
 input.onButtonPressed(Button.A, function () {
@@ -99,6 +104,9 @@ function read_data () {
     }
     radio.sendNumber(direction_left_right_combined_number)
 }
+function BrakeOn () {
+    pins.digitalWritePin(DigitalPin.P3, 1)
+}
 function ledscontrol () {
     led.unplot(0, led_accel_left_row)
     led.unplot(4, led_accel_right_row)
@@ -119,6 +127,7 @@ let directionX = 0
 let readX = 0
 let reverse_right = 0
 let reverse_left = 0
+let time_of_last_move = 0
 let ADC_deadzone_high = 0
 let ADC_deadzone_low = 0
 let LED_max_value = 0
@@ -131,6 +140,7 @@ let led_accel_row = 0
 let receiver_mode = 0
 radio.setGroup(99)
 receiver_mode = 1
+let wait_ms_to_brake = 1000
 led_accel_row = 2
 led.plot(0, led_accel_row)
 led.plot(4, led_accel_row)
@@ -162,7 +172,9 @@ basic.forever(function () {
         LED_max_value
         ))
     } else {
-        pins.digitalWritePin(DigitalPin.P3, 0)
+        if (input.runningTime() - time_of_last_move > wait_ms_to_brake) {
+            BrakeOn()
+        }
     }
     basic.pause(100)
 })
