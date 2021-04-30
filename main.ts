@@ -141,7 +141,7 @@ ADC_resolution = 1024
 let LED_max_value = 255
 ADC_deadzone_low = ADC_resolution / 2 - deadzone_width / 2
 ADC_deadzone_high = ADC_resolution / 2 + deadzone_width / 2
-led.enable(false)
+led.enable(true)
 basic.forever(function () {
     if (receiver_mode == 0) {
         read_data()
