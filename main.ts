@@ -1,7 +1,7 @@
 function BrakeOff () {
     time_of_last_move = input.runningTime()
     // Brake off
-    pins.digitalWritePin(DigitalPin.P3, 0)
+    pins.digitalWritePin(DigitalPin.P16, 0)
 }
 radio.onReceivedNumber(function (receivedNumber) {
     if (receiver_mode != 0) {
@@ -17,6 +17,21 @@ radio.onReceivedNumber(function (receivedNumber) {
         if (left_pwm != 0 || right_pwm != 0) {
             BrakeOff()
         }
+        ledscontrol()
+        led.plotBrightness(0, led_accel_row - 1, pins.map(
+        left_pwm,
+        0,
+        DAC_resolution - 1,
+        0,
+        LED_max_value
+        ))
+        led.plotBrightness(4, led_accel_row - 1, pins.map(
+        right_pwm,
+        0,
+        DAC_resolution - 1,
+        0,
+        LED_max_value
+        ))
         pins.digitalWritePin(DigitalPin.P2, reverse_left)
         pins.digitalWritePin(DigitalPin.P8, reverse_right)
         pins.analogWritePin(AnalogPin.P0, left_pwm)
@@ -26,10 +41,8 @@ radio.onReceivedNumber(function (receivedNumber) {
 input.onButtonPressed(Button.A, function () {
     led.toggle(2, 0)
     if (receiver_mode == 0) {
-        led.enable(false)
         receiver_mode = 1
     } else {
-        led.enable(true)
         receiver_mode = 0
     }
 })
@@ -94,10 +107,10 @@ function read_data () {
     radio.sendNumber(direction_left_right_combined_number)
 }
 function BrakeOn () {
-    pins.digitalWritePin(DigitalPin.P3, 1)
+    pins.digitalWritePin(DigitalPin.P16, 1)
 }
 function ledscontrol () {
-    led.unplot(1, led_accel_left_row)
+    led.unplot(0, led_accel_left_row)
     led.unplot(4, led_accel_right_row)
     if (reverse_left != 0) {
         led_accel_left_row = led_accel_row + 1
@@ -119,6 +132,7 @@ let reverse_left = 0
 let time_of_last_move = 0
 let ADC_deadzone_high = 0
 let ADC_deadzone_low = 0
+let LED_max_value = 0
 let ADC_resolution = 0
 let DAC_resolution = 0
 let right_pwm = 0
@@ -127,7 +141,7 @@ let decimals = 0
 let led_accel_row = 0
 let receiver_mode = 0
 radio.setGroup(99)
-receiver_mode = 0
+receiver_mode = 1
 let wait_ms_to_brake = 1000
 led_accel_row = 2
 led.plot(0, led_accel_row)
@@ -138,15 +152,14 @@ right_pwm = 50
 DAC_resolution = 1024
 let deadzone_width = 24
 ADC_resolution = 1024
-let LED_max_value = 255
+LED_max_value = 255
 ADC_deadzone_low = ADC_resolution / 2 - deadzone_width / 2
 ADC_deadzone_high = ADC_resolution / 2 + deadzone_width / 2
-led.enable(true)
 basic.forever(function () {
     if (receiver_mode == 0) {
         read_data()
         ledscontrol()
-        led.plotBrightness(1, led_accel_left_row, pins.map(
+        led.plotBrightness(0, led_accel_left_row, pins.map(
         left_pwm,
         0,
         DAC_resolution - 1,
