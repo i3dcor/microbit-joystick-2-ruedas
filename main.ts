@@ -38,13 +38,16 @@ radio.onReceivedNumber(function (receivedNumber) {
         pins.analogWritePin(AnalogPin.P1, right_pwm)
     }
 })
-input.onButtonPressed(Button.A, function () {
+function setReceiverMode () {
     led.toggle(2, 0)
     if (receiver_mode == 0) {
         receiver_mode = 1
     } else {
         receiver_mode = 0
     }
+}
+input.onButtonPressed(Button.A, function () {
+    setReceiverMode()
 })
 function read_data () {
     readX = pins.analogReadPin(AnalogPin.P0)
@@ -142,6 +145,7 @@ let led_accel_row = 0
 let receiver_mode = 0
 radio.setGroup(99)
 receiver_mode = 1
+setReceiverMode()
 let wait_ms_to_brake = 1000
 led_accel_row = 2
 led.plot(0, led_accel_row)
