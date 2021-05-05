@@ -1,7 +1,13 @@
 function BrakeOff () {
     time_of_last_move = input.runningTime()
-    // Brake off
-    pins.digitalWritePin(DigitalPin.P16, 0)
+    if (left_pwm != 0) {
+        // Brake off
+        pins.digitalWritePin(DigitalPin.P16, 0)
+    }
+    if (right_pwm != 0) {
+        // Brake off
+        pins.digitalWritePin(DigitalPin.P15, 0)
+    }
 }
 radio.onReceivedNumber(function (receivedNumber) {
     if (receiver_mode != 0) {
@@ -93,15 +99,31 @@ function read_data () {
         reverse_left = 0
         accelY = 0
     }
-    if (directionX < 0) {
-        left_pwm = Math.round(accelY * (1 + directionX / DAC_resolution))
-        right_pwm = accelY
-    } else if (directionX > 0) {
-        left_pwm = accelY
-        right_pwm = Math.round(accelY * (1 - directionX / DAC_resolution))
+    if (accelY > 0) {
+        if (directionX < 0) {
+            left_pwm = Math.round(accelY * (1 + directionX / DAC_resolution))
+            right_pwm = accelY
+        } else if (directionX > 0) {
+            left_pwm = accelY
+            right_pwm = Math.round(accelY * (1 - directionX / DAC_resolution))
+        } else {
+            left_pwm = accelY
+            right_pwm = accelY
+        }
     } else {
-        left_pwm = accelY
-        right_pwm = accelY
+        reverse_left = 0
+        // rotate in place
+        // 
+        if (directionX < 0) {
+            left_pwm = 0
+            right_pwm = -1 * directionX
+        } else if (directionX > 0) {
+            left_pwm = directionX
+            right_pwm = 0
+        } else {
+            left_pwm = 0
+            right_pwm = 0
+        }
     }
     direction_left_right_combined_number = right_pwm + left_pwm * decimals
     if (reverse_left != 0) {
@@ -110,6 +132,7 @@ function read_data () {
     radio.sendNumber(direction_left_right_combined_number)
 }
 function BrakeOn () {
+    pins.digitalWritePin(DigitalPin.P15, 1)
     pins.digitalWritePin(DigitalPin.P16, 1)
 }
 function ledscontrol () {
@@ -144,7 +167,7 @@ let decimals = 0
 let led_accel_row = 0
 let receiver_mode = 0
 radio.setGroup(99)
-receiver_mode = 1
+receiver_mode = 0
 setReceiverMode()
 let wait_ms_to_brake = 1000
 led_accel_row = 2
