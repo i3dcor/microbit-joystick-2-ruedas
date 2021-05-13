@@ -1,29 +1,24 @@
 function BrakeOff () {
     time_of_last_move = input.runningTime()
-    if (left_pwm != 0) {
-        // Brake off
-        pins.digitalWritePin(DigitalPin.P16, 0)
-    }
-    if (right_pwm != 0) {
-        // Brake off
-        pins.digitalWritePin(DigitalPin.P15, 0)
-    }
+    // Brake off
+    pins.digitalWritePin(DigitalPin.P16, 0)
+    // Brake off
+    pins.digitalWritePin(DigitalPin.P15, 0)
 }
 radio.onReceivedNumber(function (receivedNumber) {
     if (!(game.isPaused())) {
         if (receiver_mode != 0) {
             if (receivedNumber < 0) {
-                reverse_left = 1
-                reverse_right = 0
+                turn_left()
             } else {
-                reverse_left = 0
-                reverse_right = 1
+                turn_right()
             }
             left_pwm = Math.round(Math.abs(Math.trunc(receivedNumber / decimals)))
             right_pwm = Math.round(Math.abs(receivedNumber) - left_pwm * decimals)
             if (left_pwm != 0 || right_pwm != 0) {
                 BrakeOff()
             }
+            Uturn()
             ledscontrol()
             led.plotBrightness(0, led_accel_row - 1, pins.map(
             left_pwm,
@@ -57,6 +52,17 @@ function setReceiverMode () {
 input.onButtonPressed(Button.A, function () {
     setReceiverMode()
 })
+function Uturn () {
+    if (left_pwm > 0 && right_pwm == 0) {
+        right_pwm = left_pwm
+        turn_right()
+    } else {
+        if (left_pwm == 0 && right_pwm > 0) {
+            left_pwm = right_pwm
+            turn_left()
+        }
+    }
+}
 function read_data () {
     readX = pins.analogReadPin(AnalogPin.P0)
     if (readX < ADC_deadzone_low) {
@@ -137,6 +143,10 @@ function BrakeOn () {
     pins.digitalWritePin(DigitalPin.P15, 1)
     pins.digitalWritePin(DigitalPin.P16, 1)
 }
+function turn_left () {
+    reverse_left = 1
+    reverse_right = 0
+}
 input.onButtonPressed(Button.B, function () {
     if (game.isPaused()) {
         radio.setTransmitPower(7)
@@ -159,6 +169,10 @@ function ledscontrol () {
         led_accel_right_row = led_accel_row - 1
     }
 }
+function turn_right () {
+    reverse_left = 0
+    reverse_right = 1
+}
 let led_accel_right_row = 0
 let led_accel_left_row = 0
 let direction_left_right_combined_number = 0
@@ -180,7 +194,7 @@ let decimals = 0
 let led_accel_row = 0
 let receiver_mode = 0
 radio.setGroup(99)
-receiver_mode = 1
+receiver_mode = 0
 setReceiverMode()
 let wait_ms_to_brake = 1000
 led_accel_row = 2
