@@ -53,11 +53,11 @@ input.onButtonPressed(Button.A, function () {
     setReceiverMode()
 })
 function Uturn () {
-    if (left_pwm > 0 && right_pwm == 0) {
+    if (left_pwm != 0 && right_pwm == 0) {
         right_pwm = left_pwm
         turn_right()
     } else {
-        if (left_pwm == 0 && right_pwm > 0) {
+        if (left_pwm == 0 && right_pwm != 0) {
             left_pwm = right_pwm
             turn_left()
         }
@@ -124,9 +124,9 @@ function read_data () {
         // 
         if (directionX < 0) {
             left_pwm = 0
-            right_pwm = -1 * directionX
+            right_pwm = Math.abs(Math.round(directionX))
         } else if (directionX > 0) {
-            left_pwm = directionX
+            left_pwm = Math.round(directionX)
             right_pwm = 0
         } else {
             left_pwm = 0
@@ -148,8 +148,8 @@ function backward () {
     reverse_right = 0
 }
 function turn_left () {
-    reverse_left = 1
-    reverse_right = 1
+    reverse_left = 0
+    reverse_right = 0
 }
 input.onButtonPressed(Button.B, function () {
     if (game.isPaused()) {
@@ -178,8 +178,8 @@ function forward () {
     reverse_right = 1
 }
 function turn_right () {
-    reverse_left = 0
-    reverse_right = 0
+    reverse_left = 1
+    reverse_right = 1
 }
 let led_accel_right_row = 0
 let led_accel_left_row = 0
