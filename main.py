@@ -1,49 +1,68 @@
 function BrakeOff () {
-    time_of_last_move += input.runningTime()
+    time_of_last_move = input.runningTime()
     // Brake off
-    pins.digitalWritePin(DigitalPin.P3, 0)
+    pins.digitalWritePin(DigitalPin.P16, 0)
+    // Brake off
+    pins.digitalWritePin(DigitalPin.P15, 0)
 }
 radio.onReceivedNumber(function (receivedNumber) {
-    if (receiver_mode != 0) {
-        if (receivedNumber < 0) {
-            reverse_left = 1
-            reverse_right = 0
-        } else {
-            reverse_left = 0
-            reverse_right = 1
+    if (!(game.isPaused())) {
+        if (receiver_mode != 0) {
+            if (receivedNumber < 0) {
+                backward()
+            } else {
+                forward()
+            }
+            left_pwm = Math.round(Math.abs(Math.trunc(receivedNumber / decimals)))
+            right_pwm = Math.round(Math.abs(receivedNumber) - left_pwm * decimals)
+            if (left_pwm != 0 || right_pwm != 0) {
+                BrakeOff()
+                Uturn()
+            }
+            ledscontrol()
+            led.plotBrightness(0, led_accel_row - 1, pins.map(
+            left_pwm,
+            0,
+            DAC_resolution - 1,
+            0,
+            LED_max_value
+            ))
+            led.plotBrightness(4, led_accel_row - 1, pins.map(
+            right_pwm,
+            0,
+            DAC_resolution - 1,
+            0,
+            LED_max_value
+            ))
+            pins.digitalWritePin(DigitalPin.P2, reverse_left)
+            pins.digitalWritePin(DigitalPin.P8, reverse_right)
+            pins.analogWritePin(AnalogPin.P0, left_pwm)
+            pins.analogWritePin(AnalogPin.P1, right_pwm)
         }
-        ledscontrol()
-        led.plotBrightness(0, led_accel_row - 1, pins.map(
-        left_pwm,
-        0,
-        DAC_resolution - 1,
-        0,
-        LED_max_value
-        ))
-        led.plotBrightness(4, led_accel_row - 1, pins.map(
-        right_pwm,
-        0,
-        DAC_resolution - 1,
-        0,
-        LED_max_value
-        ))
-        left_pwm = Math.round(Math.abs(Math.trunc(receivedNumber / decimals)))
-        right_pwm = Math.round(Math.abs(receivedNumber) - left_pwm * decimals)
-        BrakeOff()
-        pins.digitalWritePin(DigitalPin.P2, reverse_left)
-        pins.digitalWritePin(DigitalPin.P8, reverse_right)
-        pins.analogWritePin(AnalogPin.P0, left_pwm)
-        pins.analogWritePin(AnalogPin.P1, right_pwm)
     }
 })
-input.onButtonPressed(Button.A, function () {
+function setReceiverMode () {
     led.toggle(2, 0)
     if (receiver_mode == 0) {
         receiver_mode = 1
     } else {
         receiver_mode = 0
     }
+}
+input.onButtonPressed(Button.A, function () {
+    setReceiverMode()
 })
+function Uturn () {
+    if (left_pwm > 0 && right_pwm == 0) {
+        right_pwm = left_pwm
+        turn_right()
+    } else {
+        if (left_pwm == 0 && right_pwm > 0) {
+            left_pwm = right_pwm
+            turn_left()
+        }
+    }
+}
 function read_data () {
     readX = pins.analogReadPin(AnalogPin.P0)
     if (readX < ADC_deadzone_low) {
@@ -88,15 +107,31 @@ function read_data () {
         reverse_left = 0
         accelY = 0
     }
-    if (directionX < 0) {
-        left_pwm = Math.round(accelY * (1 + directionX / DAC_resolution))
-        right_pwm = accelY
-    } else if (directionX > 0) {
-        left_pwm = accelY
-        right_pwm = Math.round(accelY * (1 - directionX / DAC_resolution))
+    if (accelY > 0) {
+        if (directionX < 0) {
+            left_pwm = Math.round(accelY * (1 + directionX / DAC_resolution))
+            right_pwm = accelY
+        } else if (directionX > 0) {
+            left_pwm = accelY
+            right_pwm = Math.round(accelY * (1 - directionX / DAC_resolution))
+        } else {
+            left_pwm = accelY
+            right_pwm = accelY
+        }
     } else {
-        left_pwm = accelY
-        right_pwm = accelY
+        reverse_left = 0
+        // rotate in place
+        // 
+        if (directionX < 0) {
+            left_pwm = 0
+            right_pwm = -1 * directionX
+        } else if (directionX > 0) {
+            left_pwm = directionX
+            right_pwm = 0
+        } else {
+            left_pwm = 0
+            right_pwm = 0
+        }
     }
     direction_left_right_combined_number = right_pwm + left_pwm * decimals
     if (reverse_left != 0) {
@@ -105,8 +140,28 @@ function read_data () {
     radio.sendNumber(direction_left_right_combined_number)
 }
 function BrakeOn () {
-    pins.digitalWritePin(DigitalPin.P3, 1)
+    pins.digitalWritePin(DigitalPin.P15, 1)
+    pins.digitalWritePin(DigitalPin.P16, 1)
 }
+function backward () {
+    reverse_left = 1
+    reverse_right = 0
+}
+function turn_left () {
+    reverse_left = 1
+    reverse_right = 1
+}
+input.onButtonPressed(Button.B, function () {
+    if (game.isPaused()) {
+        radio.setTransmitPower(7)
+        led.enable(true)
+        game.resume()
+    } else {
+        radio.setTransmitPower(0)
+        led.enable(false)
+        game.pause()
+    }
+})
 function ledscontrol () {
     led.unplot(0, led_accel_left_row)
     led.unplot(4, led_accel_right_row)
@@ -117,6 +172,14 @@ function ledscontrol () {
         led_accel_left_row = led_accel_row - 1
         led_accel_right_row = led_accel_row - 1
     }
+}
+function forward () {
+    reverse_left = 0
+    reverse_right = 1
+}
+function turn_right () {
+    reverse_left = 0
+    reverse_right = 0
 }
 let led_accel_right_row = 0
 let led_accel_left_row = 0
@@ -139,8 +202,8 @@ let decimals = 0
 let led_accel_row = 0
 let receiver_mode = 0
 radio.setGroup(99)
-pins.setEvents(DigitalPin.P3, PinEventType.Touch)
-receiver_mode = 1
+receiver_mode = 0
+setReceiverMode()
 let wait_ms_to_brake = 1000
 led_accel_row = 2
 led.plot(0, led_accel_row)
@@ -155,26 +218,28 @@ LED_max_value = 255
 ADC_deadzone_low = ADC_resolution / 2 - deadzone_width / 2
 ADC_deadzone_high = ADC_resolution / 2 + deadzone_width / 2
 basic.forever(function () {
-    if (receiver_mode == 0) {
-        read_data()
-        ledscontrol()
-        led.plotBrightness(0, led_accel_left_row, pins.map(
-        left_pwm,
-        0,
-        DAC_resolution - 1,
-        0,
-        LED_max_value
-        ))
-        led.plotBrightness(4, led_accel_right_row, pins.map(
-        right_pwm,
-        0,
-        DAC_resolution - 1,
-        0,
-        LED_max_value
-        ))
-    } else {
-        if (input.runningTime() - time_of_last_move > wait_ms_to_brake) {
-        	
+    if (!(game.isPaused())) {
+        if (receiver_mode == 0) {
+            read_data()
+            ledscontrol()
+            led.plotBrightness(0, led_accel_left_row, pins.map(
+            left_pwm,
+            0,
+            DAC_resolution - 1,
+            0,
+            LED_max_value
+            ))
+            led.plotBrightness(4, led_accel_right_row, pins.map(
+            right_pwm,
+            0,
+            DAC_resolution - 1,
+            0,
+            LED_max_value
+            ))
+        } else {
+            if (input.runningTime() - time_of_last_move > wait_ms_to_brake) {
+                BrakeOn()
+            }
         }
     }
     basic.pause(100)

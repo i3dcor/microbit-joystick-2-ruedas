@@ -9,16 +9,16 @@ radio.onReceivedNumber(function (receivedNumber) {
     if (!(game.isPaused())) {
         if (receiver_mode != 0) {
             if (receivedNumber < 0) {
-                turn_left()
+                backward()
             } else {
-                turn_right()
+                forward()
             }
             left_pwm = Math.round(Math.abs(Math.trunc(receivedNumber / decimals)))
             right_pwm = Math.round(Math.abs(receivedNumber) - left_pwm * decimals)
             if (left_pwm != 0 || right_pwm != 0) {
                 BrakeOff()
+                Uturn()
             }
-            Uturn()
             ledscontrol()
             led.plotBrightness(0, led_accel_row - 1, pins.map(
             left_pwm,
@@ -143,9 +143,13 @@ function BrakeOn () {
     pins.digitalWritePin(DigitalPin.P15, 1)
     pins.digitalWritePin(DigitalPin.P16, 1)
 }
-function turn_left () {
+function backward () {
     reverse_left = 1
     reverse_right = 0
+}
+function turn_left () {
+    reverse_left = 1
+    reverse_right = 1
 }
 input.onButtonPressed(Button.B, function () {
     if (game.isPaused()) {
@@ -169,9 +173,13 @@ function ledscontrol () {
         led_accel_right_row = led_accel_row - 1
     }
 }
-function turn_right () {
+function forward () {
     reverse_left = 0
     reverse_right = 1
+}
+function turn_right () {
+    reverse_left = 0
+    reverse_right = 0
 }
 let led_accel_right_row = 0
 let led_accel_left_row = 0
